@@ -128,7 +128,7 @@ class functionsTest extends SparkTest {
   test("count column") {
     val inputDF = Seq((10, 20, 30), (20, 30, 40), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
     val resultDF = inputDF.frequency("dfCol1", "dfCol2", "dfCol3")
-    val expectedDF = Seq((10, 20, 30, 1), (20, 30, 40, 2)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
+    val expectedDF = Seq((20, 30, 40, 2),(10, 20, 30, 1)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
 
     resultDF.collect should contain theSameElementsAs expectedDF.collect
   }
