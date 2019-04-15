@@ -124,6 +124,22 @@ class functionsTest extends SparkTest {
     spark.load[PartData].collect() should contain theSameElementsAs raw
     FileUtils.deleteDirectory(new java.io.File("/tmp/footables"))
   }
+
+  test("count column") {
+    val inputDF = Seq((10, 20, 30), (20, 30, 40), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
+    val resultDF = inputDF.frequency("dfCol1", "dfCol2", "dfCol3")
+    val expectedDF = Seq((10, 20, 30, 1), (20, 30, 40, 2)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
+
+    resultDF.collect should contain theSameElementsAs expectedDF.collect
+  }
+
+  test("count unique column") {
+    val inputDF = Seq((10, 20, 30), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
+    val resultDF = inputDF.frequency("dfCol1", "dfCol2", "dfCol3")
+    val expectedDF = Seq((10, 20, 30, 1), (20, 30, 40, 1)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
+
+    resultDF.collect should contain theSameElementsAs expectedDF.collect
+  }
 }
 
 object functionsTest {

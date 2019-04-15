@@ -131,6 +131,10 @@ package object functions {
     def save()(implicit table: Table[T]): Unit = {
       ds.write.partitionBy(table.partitioning: _*).parquet(table.fullPath)
     }
+
+    def frequency (col: String, otherColumns: String*): DataFrame = {
+      ds.groupBy(col, otherColumns: _*).agg(count("*") as "count").sort(desc("count"))
+    }
   }
 
   implicit class SparkFunctions(val spark: SparkSession) extends AnyVal {
