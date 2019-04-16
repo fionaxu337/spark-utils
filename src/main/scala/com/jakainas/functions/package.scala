@@ -132,6 +132,24 @@ package object functions {
       ds.write.partitionBy(table.partitioning: _*).parquet(table.fullPath)
     }
 
+    /**
+      * Count the frequency of columns of the current DataFrame
+      *
+      * @param  column - columns of the dataframe
+      * @return - The DataFrame with columns and the respective frequency of the columns
+      */
+    def frequency(column: Column*): DataFrame = {
+      ds.groupBy(column: _*).count.sort(desc("count"))
+    }
+
+    /**
+      * Count the frequency of columns of the current DataFrame
+      *
+      * @param  col - one column of the dataframe
+      * @param  otherColumns - other columns of the dataframe
+      * @return - The DataFrame with columns and the respective frequency of the columns
+      */
+
     def frequency (col: String, otherColumns: String*): DataFrame = {
       ds.groupBy(col, otherColumns: _*).agg(count("*") as "count").sort(desc("count"))
     }

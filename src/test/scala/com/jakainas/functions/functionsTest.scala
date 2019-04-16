@@ -3,6 +3,7 @@ package com.jakainas.functions
 import com.jakainas.table.{DailyPartitioning, Table, TableConfig}
 import com.jakainas.utils.SparkTest
 import org.apache.commons.io.FileUtils
+import org.apache.spark.sql.Row
 
 class functionsTest extends SparkTest {
   import functionsTest._
@@ -124,21 +125,51 @@ class functionsTest extends SparkTest {
     spark.load[PartData].collect() should contain theSameElementsAs raw
     FileUtils.deleteDirectory(new java.io.File("/tmp/footables"))
   }
+  
+  test("count one column") {
+    val inputDF = Seq(10, 20, 30, 20).toDF("dfCol1")
 
-  test("count column") {
-    val inputDF = Seq((10, 20, 30), (20, 30, 40), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
-    val resultDF = inputDF.frequency("dfCol1", "dfCol2", "dfCol3")
-    val expectedDF = Seq((20, 30, 40, 2),(10, 20, 30, 1)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
+    val resultDF = inputDF.frequency('dfCol1) // test column input
+    val resultDF1 = inputDF.frequency("dfCol1") // test string input
 
-    resultDF.collect should contain theSameElementsAs expectedDF.collect
+    val expectedDF = Array(Row(20, 2), Row(10, 1), Row(30, 1))
+
+    resultDF.columns should contain theSameElementsAs Array("dfCol1", "count")
+    resultDF.collect should contain theSameElementsAs expectedDF
+
+    resultDF1.columns should contain theSameElementsAs Array("dfCol1", "count")
+    resultDF1.collect should contain theSameElementsAs expectedDF
   }
 
-  test("count unique column") {
-    val inputDF = Seq((10, 20, 30), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
-    val resultDF = inputDF.frequency("dfCol1", "dfCol2", "dfCol3")
-    val expectedDF = Seq((10, 20, 30, 1), (20, 30, 40, 1)).toDF("dfCol1", "dfCol2", "dfCol3", "count")
+  test("count columns") {
+    val inputDF = Seq((10, 20, 30), (20, 30, 40), (20, 30, 40)).toDF("dfCol1", "dfCol2", "dfCol3")
 
-    resultDF.collect should contain theSameElementsAs expectedDF.collect
+    val resultDF = inputDF.frequency('dfCol1, 'dfCol2, 'dfCol3) //test column input
+    val resultDF1 = inputDF.frequency("dfCol1", "dfCol2", "dfCol3") // test string input
+
+    val expectedDF = Array(Row(20, 30, 40, 2), Row(10, 20, 30, 1))
+
+    resultDF.columns should contain theSameElementsAs Array("dfCol1", "dfCol2", "dfCol3", "count")
+    resultDF.collect should contain theSameElementsAs expectedDF
+
+    resultDF1.columns should contain theSameElementsAs Array("dfCol1", "dfCol2", "dfCol3", "count")
+    resultDF1.collect should contain theSameElementsAs expectedDF
+  }
+
+
+  test("count unique column") {
+    val inputDF = Seq((10, 20), (20, 30)).toDF("dfCol1", "dfCol2")
+
+    val resultDF = inputDF.frequency('dfCol1, 'dfCol2) //test column input
+    val resultDF1 = inputDF.frequency("dfCol1", "dfCol2") // test string input
+
+    val expectedDF = Seq(Row(10, 20, 1), Row(20, 30, 1))
+
+    resultDF.columns should contain theSameElementsAs Array("dfCol1", "dfCol2", "count")
+    resultDF.collect should contain theSameElementsAs expectedDF
+
+    resultDF1.columns should contain theSameElementsAs Array("dfCol1", "dfCol2", "count")
+    resultDF1.collect should contain theSameElementsAs expectedDF
   }
 }
 
